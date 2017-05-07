@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="406dp"
+    android:minHeight="406dp">
+    <sample.droid.cells.MyImageView
+        android:id="@+id/PhotoViewImage"
+        android:scaleType="centerCrop"
+        android:layout_alignParentTop="true"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:minHeight="300dp" />
+    <TextView
+        android:id="@+id/PhotoViewTitle"
+        android:layout_below="@id/PhotoViewImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/PhotoViewDate"
+        android:layout_below="@id/PhotoViewTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:background="#FFFFFF"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="6dp" />
+</RelativeLayout>
