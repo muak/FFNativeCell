@@ -1,20 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+	xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
+	xmlns:cell="clr-namespace:Sample.Cells;assembly=Sample"
 	xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms" 
 	prism:ViewModelLocator.AutowireViewModel="True" 
 	x:Class="Sample.Views.MainPage" Title="MainPage">
 
 	<ListView x:Name="listview" ItemsSource="{Binding Items}" HasUnevenRows="false" RowHeight="400">
+
+		<x:Arguments>
+			<ListViewCachingStrategy>
+				<OnPlatform x:TypeArguments="x:String">
+					<On Platform="iOS">RecycleElement</On>
+					<On Platform="Android">RetainElement</On>
+				</OnPlatform>
+			</ListViewCachingStrategy>
+		</x:Arguments>
+		
 		<ListView.ItemTemplate>
 			<DataTemplate>
-				<ViewCell>
+				<cell:PhotoViewCell PhotoItem="{Binding}" Command="{Binding BindingContext.GoDetailCommand,Source={x:Reference listview}}">
+					<!-- ↑のプロパティはAndroidのみ有効 -->
+					<!-- ↓のViewCellの中身はiOSのみ有効 -->
 					<StackLayout Spacing="0" Margin="0,0,0,6" BackgroundColor="Silver">
-						<Image Aspect="AspectFill" Source="{Binding PhotoUrl}" HorizontalOptions="FillAndExpand" HeightRequest="300" />
+						<StackLayout.GestureRecognizers>
+							<TapGestureRecognizer Command="{Binding BindingContext.GoDetailCommand,Source={x:Reference listview}}" CommandParameter="{Binding PhotoUrl}" />
+						</StackLayout.GestureRecognizers>
+						<ff:CachedImage DownsampleWidth="640" Aspect="AspectFill" Source="{Binding PhotoUrl}" HorizontalOptions="FillAndExpand" HeightRequest="300" />
 						<Label Text="{Binding Title,StringFormat='タイトル：{0:N}'}" />
 						<Label Text="{Binding Date,StringFormat='撮影日：{0:N}'}" />
 					</StackLayout>
-				</ViewCell>
+				</cell:PhotoViewCell>
 			</DataTemplate>
 		</ListView.ItemTemplate>
 	</ListView>

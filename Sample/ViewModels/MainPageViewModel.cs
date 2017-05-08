@@ -8,50 +8,54 @@ using System.Collections.ObjectModel;
 
 namespace Sample.ViewModels
 {
-	public class MainPageViewModel : BindableBase, INavigationAware
-	{
-		public ObservableCollection<PhotoItem> Items{get;set;}
+    public class MainPageViewModel : BindableBase, INavigationAware
+    {
+        public ObservableCollection<PhotoItem> Items { get; set; }
 
-		private string _title;
-		public string Title {
-			get { return _title; }
-			set { SetProperty(ref _title, value); }
-		}
+        private DelegateCommand<object> _GoDetailCommand;
+        public DelegateCommand<object> GoDetailCommand {
+            get {
+                return _GoDetailCommand = _GoDetailCommand ?? new DelegateCommand<object>((o) => {
+                    _navi.NavigateAsync("DetailPage", new NavigationParameters { { "key", o.ToString() } });
+                });
+            }
+        }
 
-		public MainPageViewModel()
-		{
-			Items = new ObservableCollection<PhotoItem>();
-			for(var i=0;i<20;i++){
-				Items.Add(new PhotoItem{
-					PhotoUrl=$"http://kamusoft.jp/openimage/nativecell/{i+1}.jpg",
-					Title = "たいとる",
-					Date = "2017-01-11 11:11:11"
-				});
-			}
-		}
+        INavigationService _navi;
+        public MainPageViewModel(INavigationService navigationService)
+        {
+            _navi = navigationService;
+            Items = new ObservableCollection<PhotoItem>();
+            for (var i = 0; i < 20; i++) {
+                Items.Add(new PhotoItem {
+                    PhotoUrl = $"http://kamusoft.jp/openimage/nativecell/{i + 1}.jpg",
+                    Title = $"たいとる{i + 1}",
+                    Date = "2017-01-11 11:11:11",
+                });
+            }
+        }
 
-		public void OnNavigatedFrom(NavigationParameters parameters)
-		{
+        public void OnNavigatedFrom(NavigationParameters parameters)
+        {
 
-		}
+        }
 
-		public void OnNavigatedTo(NavigationParameters parameters)
-		{
-			if (parameters.ContainsKey("title"))
-				Title = (string)parameters["title"] + " and Prism";
-		}
+        public void OnNavigatedTo(NavigationParameters parameters)
+        {
 
-		public void OnNavigatingTo(NavigationParameters parameters)
-		{
-		}
+        }
 
-		public class PhotoItem
-		{
-			public string PhotoUrl { get; set; }
-			public string Title { get; set; }
-			public string Date { get; set; }
+        public void OnNavigatingTo(NavigationParameters parameters)
+        {
+        }
 
-		}
-	}
+        public class PhotoItem
+        {
+            public string PhotoUrl { get; set; }
+            public string Title { get; set; }
+            public string Date { get; set; }
+
+        }
+    }
 }
 
