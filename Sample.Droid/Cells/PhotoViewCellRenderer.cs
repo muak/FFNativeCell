@@ -89,7 +89,7 @@ namespace Sample.Droid.Cells
         }
     }
 
-    [Preserve(AllMembers = true)]
+    [Android.Runtime.Preserve(AllMembers = true)]
     [Register("sample.droid.cells.MyImageView")]
     public class MyImageView : ImageViewAsync
     {
