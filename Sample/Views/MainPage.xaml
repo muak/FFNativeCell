@@ -7,31 +7,41 @@
 	prism:ViewModelLocator.AutowireViewModel="True" 
 	x:Class="Sample.Views.MainPage" Title="MainPage">
 
-	<ListView x:Name="listview" ItemsSource="{Binding Items}" HasUnevenRows="false" RowHeight="400">
+	<ListView x:Name="listview" CachingStrategy="RecycleElement" ItemsSource="{Binding Items}" HasUnevenRows="false" RowHeight="400">
 
-		<x:Arguments>
+        <!-- 使用不可 -->
+		<!--<x:Arguments>
 			<ListViewCachingStrategy>
-				<OnPlatform x:TypeArguments="x:String">
-					<On Platform="iOS">RecycleElement</On>
-					<On Platform="Android">RetainElement</On>
+				<OnPlatform x:TypeArguments="ListViewCachingStrategy">
+					<On Platform="iOS" Value="RecycleElement" />
+					<On Platform="Android" Value="RetainElement" />
 				</OnPlatform>
 			</ListViewCachingStrategy>
-		</x:Arguments>
+		</x:Arguments>-->
 		
 		<ListView.ItemTemplate>
 			<DataTemplate>
+<!--            <ViewCell>-->
 				<cell:PhotoViewCell PhotoItem="{Binding}" Command="{Binding BindingContext.GoDetailCommand,Source={x:Reference listview}}">
 					<!-- ↑のプロパティはAndroidのみ有効 -->
 					<!-- ↓のViewCellの中身はiOSのみ有効 -->
-					<StackLayout Spacing="0" Margin="0,0,0,6" BackgroundColor="Silver">
-						<StackLayout.GestureRecognizers>
-							<TapGestureRecognizer Command="{Binding BindingContext.GoDetailCommand,Source={x:Reference listview}}" CommandParameter="{Binding PhotoUrl}" />
-						</StackLayout.GestureRecognizers>
-						<ff:CachedImage DownsampleWidth="640" Aspect="AspectFill" Source="{Binding PhotoUrl}" HorizontalOptions="FillAndExpand" HeightRequest="300" />
-						<Label Text="{Binding Title,StringFormat='タイトル：{0:N}'}" />
-						<Label Text="{Binding Date,StringFormat='撮影日：{0:N}'}" />
-					</StackLayout>
+                    <ViewCell.View>
+                        <OnPlatform x:TypeArguments="View">
+                            <On Platform="iOS">
+            					<StackLayout Spacing="0" Margin="0,0,0,6" BackgroundColor="Silver">
+            						<StackLayout.GestureRecognizers>
+            							<TapGestureRecognizer Command="{Binding BindingContext.GoDetailCommand,Source={x:Reference listview}}" CommandParameter="{Binding PhotoUrl}" />
+            						</StackLayout.GestureRecognizers>
+            <!--                        <Image Aspect="AspectFill" Source="{Binding PhotoUrl}" HorizontalOptions="FillAndExpand" HeightRequest="300" />-->
+            						<ff:CachedImage DownsampleWidth="640" Aspect="AspectFill" Source="{Binding PhotoUrl}" HorizontalOptions="FillAndExpand" HeightRequest="300" />
+            						<Label Text="{Binding Title,StringFormat='Title：{0:N}'}" />
+            						<Label Text="{Binding Date,StringFormat='Taken at：{0:N}'}" />
+            					</StackLayout>
+                            </On>
+                        </OnPlatform>
+                    </ViewCell.View>
 				</cell:PhotoViewCell>
+<!--            </ViewCell>-->
 			</DataTemplate>
 		</ListView.ItemTemplate>
 	</ListView>
