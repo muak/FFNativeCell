@@ -2,8 +2,8 @@
 using Android.Content.PM;
 using Android.OS;
 using FFImageLoading.Forms.Droid;
-using Microsoft.Practices.Unity;
-using Prism.Unity;
+using Prism;
+using Prism.Ioc;
 
 namespace Sample.Droid
 {
@@ -17,8 +17,9 @@ namespace Sample.Droid
 
             base.OnCreate(bundle);
 
+            //global::Xamarin.Forms.Forms.SetFlags("FastRenderers_Experimental");
             global::Xamarin.Forms.Forms.Init(this, bundle);
-            CachedImageRenderer.Init();
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
 
             LoadApplication(new App(new AndroidInitializer()));
         }
@@ -26,9 +27,8 @@ namespace Sample.Droid
 
     public class AndroidInitializer : IPlatformInitializer
     {
-        public void RegisterTypes(IUnityContainer container)
+        public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
         }
     }
 }

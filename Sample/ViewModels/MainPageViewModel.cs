@@ -28,8 +28,8 @@ namespace Sample.ViewModels
             Items = new ObservableCollection<PhotoItem>();
             for (var i = 0; i < 20; i++) {
                 Items.Add(new PhotoItem {
-                    PhotoUrl = $"http://kamusoft.jp/openimage/nativecell/{i + 1}.jpg",
-                    Title = $"たいとる{i + 1}",
+                    PhotoUrl = $"https://kamusoft.jp/openimage/nativecell/{i + 1}.jpg",
+                    Title = $"Title {i + 1}",
                     Date = "2017-01-11 11:11:11",
                 });
             }

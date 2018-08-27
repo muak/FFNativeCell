@@ -26,18 +26,20 @@ namespace Sample.Droid.Cells
             _nativeCell = convertView as PhotoNativeCell;
 
             if (_nativeCell == null) {
-                //TODO:新規セル生成処理
+                // The process of creating a new real native cell. 新規セル生成処理。
                 _nativeCell = new PhotoNativeCell(context, _formsCell);
             }
             else {
-                //TODO:リサイクル時のイベント解除等の初期化処理
+               
 
-                //前のタスクが未完了で未キャンセルの場合はキャンセルする
+                // The process of initializing a cell when recycling. リサイクル時のセル初期化処理。
+
+                // If the previous task is no completed and no canceled, the task is canceled. 前のタスクが未完了で未キャンセルの場合はキャンセルする
                 if (_nativeCell.CurrentTask != null && !_nativeCell.CurrentTask.IsCancelled && !_nativeCell.CurrentTask.IsCompleted) {
                     _nativeCell.CurrentTask.Cancel();
                 }
 
-                //NativeCellが持っているformsCellの参照の更新
+                // NativeCellが持っているformsCellの参照の更新
                 _nativeCell.PhotoViewCell = _formsCell;
 
                 _nativeCell.SetOnClickListener(null);
@@ -47,7 +49,7 @@ namespace Sample.Droid.Cells
             _nativeCell.ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
 
             //イメージ読み込み開始
-            _nativeCell.CurrentTask = ImageService.Instance.LoadUrl(_formsCell.PhotoItem.PhotoUrl).DownSample(width: 640).Into(_nativeCell.ImageView);
+            _nativeCell.CurrentTask = ImageService.Instance.LoadUrl(_formsCell.PhotoItem.PhotoUrl).DownSample(640).Into(_nativeCell.ImageView);
             //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
             _nativeCell.ImageView.Key = _formsCell.PhotoItem.PhotoUrl;
 
@@ -81,6 +83,47 @@ namespace Sample.Droid.Cells
             Title = view.FindViewById<TextView>(Resource.Id.PhotoViewTitle);
             Date = view.FindViewById<TextView>(Resource.Id.PhotoViewDate);
 
+            PhotoViewCell.PropertyChanged += (sender, e) => {
+                if(e.PropertyName == PhotoViewCell.PhotoItemProperty.PropertyName)
+                {
+                    //前のタスクが未完了で未キャンセルの場合はキャンセルする
+                    if (CurrentTask != null && !CurrentTask.IsCancelled && !CurrentTask.IsCompleted) {
+                        CurrentTask.Cancel();
+                    }
+
+                    ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
+
+                    //イメージ読み込み開始
+                    // TODO: DownSampleで大きめを指定すると読み込みエラーが多発する問題あり
+                    CurrentTask = ImageService.Instance.LoadUrl(PhotoViewCell.PhotoItem.PhotoUrl).DownSample(640).Into(ImageView);
+                    //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
+                    ImageView.Key = PhotoViewCell.PhotoItem.PhotoUrl;
+
+                    //テキストの更新
+                    Title.Text = PhotoViewCell.PhotoItem.Title;
+                    Date.Text = PhotoViewCell.PhotoItem.Date;
+                }
+            };
+        }
+
+        public void UpdateCell()
+        {
+            //前のタスクが未完了で未キャンセルの場合はキャンセルする
+            if (CurrentTask != null && !CurrentTask.IsCancelled && !CurrentTask.IsCompleted) {
+                CurrentTask.Cancel();
+            }
+
+            ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
+
+            //イメージ読み込み開始
+            // TODO: DownSampleで大きめを指定すると読み込みエラーが多発する問題あり
+            CurrentTask = ImageService.Instance.LoadUrl(PhotoViewCell.PhotoItem.PhotoUrl).DownSample(640).Into(ImageView);
+            //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
+            ImageView.Key = PhotoViewCell.PhotoItem.PhotoUrl;
+
+            //テキストの更新
+            Title.Text = PhotoViewCell.PhotoItem.Title;
+            Date.Text = PhotoViewCell.PhotoItem.Date;
         }
 
         public void OnClick(Android.Views.View v)
@@ -89,7 +132,7 @@ namespace Sample.Droid.Cells
         }
     }
 
-    [Preserve(AllMembers = true)]
+    [Android.Runtime.Preserve(AllMembers = true)]
     [Register("sample.droid.cells.MyImageView")]
     public class MyImageView : ImageViewAsync
     {

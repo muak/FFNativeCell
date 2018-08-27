@@ -1,7 +1,7 @@
 ﻿using FFImageLoading.Forms.Touch;
 using Foundation;
-using Microsoft.Practices.Unity;
-using Prism.Unity;
+using Prism;
+using Prism.Ioc;
 using UIKit;
 
 namespace Sample.iOS
@@ -22,7 +22,7 @@ namespace Sample.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
-            CachedImageRenderer.Init();
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init();
             LoadApplication(new App(new iOSInitializer()));
 
             return base.FinishedLaunching(app, options);
@@ -31,9 +31,8 @@ namespace Sample.iOS
 
     public class iOSInitializer : IPlatformInitializer
     {
-        public void RegisterTypes(IUnityContainer container)
+        public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
         }
     }
 }
