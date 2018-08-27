@@ -11,55 +11,37 @@ using Android.Runtime;
 using Android.Util;
 using FFImageLoading.Work;
 using Android.Views;
+using System.ComponentModel;
 
 [assembly: ExportRenderer(typeof(PhotoViewCell), typeof(PhotoViewCellRenderer))]
 namespace Sample.Droid.Cells
 {
     public class PhotoViewCellRenderer : ViewCellRenderer
     {
-        PhotoViewCell _formsCell;
-        PhotoNativeCell _nativeCell;
-
         protected override Android.Views.View GetCellCore(Xamarin.Forms.Cell item, Android.Views.View convertView, Android.Views.ViewGroup parent, Android.Content.Context context)
         {
-            _formsCell = item as PhotoViewCell;
-            _nativeCell = convertView as PhotoNativeCell;
+            var formsCell = item as PhotoViewCell;
+            var nativeCell = convertView as PhotoNativeCell;
 
-            if (_nativeCell == null) {
-                // The process of creating a new real native cell. 新規セル生成処理。
-                _nativeCell = new PhotoNativeCell(context, _formsCell);
-            }
-            else {
-               
-
-                // The process of initializing a cell when recycling. リサイクル時のセル初期化処理。
-
-                // If the previous task is no completed and no canceled, the task is canceled. 前のタスクが未完了で未キャンセルの場合はキャンセルする
-                if (_nativeCell.CurrentTask != null && !_nativeCell.CurrentTask.IsCancelled && !_nativeCell.CurrentTask.IsCompleted) {
-                    _nativeCell.CurrentTask.Cancel();
-                }
-
-                // NativeCellが持っているformsCellの参照の更新
-                _nativeCell.PhotoViewCell = _formsCell;
-
-                _nativeCell.SetOnClickListener(null);
+            if (nativeCell == null) {
+                // Creating a new real native cell. 
+                // 新規セル生成処理
+                nativeCell = new PhotoNativeCell(context, formsCell);
             }
 
-            //読み込み完了までの画像など（ここでは透明）
-            _nativeCell.ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
+            // Unsubscribe the privious formscell propertychanged event on the nativecell.
+            nativeCell.PhotoViewCell.PropertyChanged -= nativeCell.CellPropertyChanged;
 
-            //イメージ読み込み開始
-            _nativeCell.CurrentTask = ImageService.Instance.LoadUrl(_formsCell.PhotoItem.PhotoUrl).DownSample(640).Into(_nativeCell.ImageView);
-            //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
-            _nativeCell.ImageView.Key = _formsCell.PhotoItem.PhotoUrl;
+            // Update the formscell reffered by the nativecell. 
+            nativeCell.PhotoViewCell = formsCell;
 
-            //テキストの更新
-            _nativeCell.Title.Text = _formsCell.PhotoItem.Title;
-            _nativeCell.Date.Text = _formsCell.PhotoItem.Date;
+            // Subscribe the current formscell propertychanged event on the nativecell.
+            nativeCell.PhotoViewCell.PropertyChanged += nativeCell.CellPropertyChanged;
 
-            _nativeCell.SetOnClickListener(_nativeCell);
+            // Update the nativecell contents with the current formscell contents.
+            nativeCell.UpdateCell();
 
-            return _nativeCell;
+            return nativeCell;
         }
     }
 
@@ -73,55 +55,50 @@ namespace Sample.Droid.Cells
         public TextView Title { get; set; }
         public TextView Date { get; set; }
 
-        public PhotoNativeCell(Context context, Cell cell) : base(context)
+        public PhotoNativeCell(Context context, PhotoViewCell formsCell) : base(context)
         {
             var view = (context as FormsAppCompatActivity).LayoutInflater.Inflate(Resource.Layout.PhotoViewCell, this, true);
 
-            PhotoViewCell = cell as PhotoViewCell;
+            PhotoViewCell = formsCell;
 
             ImageView = view.FindViewById<MyImageView>(Resource.Id.PhotoViewImage);
             Title = view.FindViewById<TextView>(Resource.Id.PhotoViewTitle);
             Date = view.FindViewById<TextView>(Resource.Id.PhotoViewDate);
 
-            PhotoViewCell.PropertyChanged += (sender, e) => {
-                if(e.PropertyName == PhotoViewCell.PhotoItemProperty.PropertyName)
-                {
-                    //前のタスクが未完了で未キャンセルの場合はキャンセルする
-                    if (CurrentTask != null && !CurrentTask.IsCancelled && !CurrentTask.IsCompleted) {
-                        CurrentTask.Cancel();
-                    }
+            SetOnClickListener(this);
+        }
 
-                    ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
-
-                    //イメージ読み込み開始
-                    // TODO: DownSampleで大きめを指定すると読み込みエラーが多発する問題あり
-                    CurrentTask = ImageService.Instance.LoadUrl(PhotoViewCell.PhotoItem.PhotoUrl).DownSample(640).Into(ImageView);
-                    //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
-                    ImageView.Key = PhotoViewCell.PhotoItem.PhotoUrl;
-
-                    //テキストの更新
-                    Title.Text = PhotoViewCell.PhotoItem.Title;
-                    Date.Text = PhotoViewCell.PhotoItem.Date;
-                }
-            };
+        public void CellPropertyChanged(object sender,PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == PhotoViewCell.PhotoItemProperty.PropertyName) {
+                // Update for when the cache strategy of Xamarin.Forms.ListView is RecycleElement
+                // or changing dynamically Xamarin.Forms cell value.
+                UpdateCell();
+            }
         }
 
         public void UpdateCell()
         {
-            //前のタスクが未完了で未キャンセルの場合はキャンセルする
+
+            // If the previous task is no completed and no canceled, the task is canceled. 
+            // 前のタスクが未完了で未キャンセルの場合はキャンセルする
             if (CurrentTask != null && !CurrentTask.IsCancelled && !CurrentTask.IsCompleted) {
                 CurrentTask.Cancel();
             }
 
+            // An alternate image until the image is completely loaded (here is transparent).
+            // 読み込み完了までの画像など（ここでは透明）
             ImageView.SetImageResource(global::Android.Resource.Color.Transparent);
 
-            //イメージ読み込み開始
+            // Begin loading the image
+            // イメージ読み込み開始
             // TODO: DownSampleで大きめを指定すると読み込みエラーが多発する問題あり
-            CurrentTask = ImageService.Instance.LoadUrl(PhotoViewCell.PhotoItem.PhotoUrl).DownSample(640).Into(ImageView);
-            //Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
+            CurrentTask = ImageService.Instance.LoadUrl(PhotoViewCell.PhotoItem.PhotoUrl).DownSample(320).Into(ImageView);
+            // Set the key in order to clear the CachedImage memory cache when finalizing.
+            // Finalize時にCachedImageのメモリ上のキャッシュをクリアするためのキー
             ImageView.Key = PhotoViewCell.PhotoItem.PhotoUrl;
 
-            //テキストの更新
+            // Update the cell's text
             Title.Text = PhotoViewCell.PhotoItem.Title;
             Date.Text = PhotoViewCell.PhotoItem.Date;
         }
